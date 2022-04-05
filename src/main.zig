@@ -1,63 +1,59 @@
 const std = @import("std");
 
-inline fn swap(arr: []f64, ix1: u32, ix2: u32) void {
-    const tmp = arr[ix2];
-    arr[ix2] = arr[ix1];
-    arr[ix1] = tmp;
+inline fn swap(arr: []f64, i: u32, j: u32) void {
+    const tmp = arr[j];
+    arr[j] = arr[i];
+    arr[i] = tmp;
 }
 
-// gets a pivot
-fn median_of_3(arr: []f64) f64 {
-    const first = arr[0];
-    const middle = arr[arr.len / 2];
-    const last = arr[arr.len - 1];
+inline fn median_of_3(arr: []f64, lo: u32, hi: u32) f64 {
+    const mid = (hi + lo) / 2;
 
-    // wow its like a hardcoded sort :bruh:
-    if ((first <= last and first >= middle) or (first >= last and first <= middle))
-        return first;
-    
-    if ((middle <= last and middle >= first) or (middle >= last and middle <= first))
-        return middle;
-    
-    return last;
+    if (arr[mid] < arr[lo])
+        swap(arr, lo, mid);
+    if (arr[hi] < arr[lo])
+        swap(arr, lo, hi);
+    if (arr[mid] < arr[hi])
+        swap(arr, mid, hi);
+
+    return arr[hi];
 }
 
 fn partition(arr: []f64, lo: u32, hi: u32) u32 {
-    //const pivot = median_of_3(arr);
-    const pivot = arr[(hi + lo) / 2];
+    const pivot = median_of_3(arr, lo, hi);
 
-    var i = lo;
-    var isFirstLoop = true; // this logic removes the need for a signed integer (ew)
+    // wrapping (%) logic to substitute for signed ints
+    // for the one case where negative numbers are actually needed
+    var i = lo -% 1;
     var j = hi + 1;
 
     while (true) {
-        if (isFirstLoop) {
-            isFirstLoop = false;
-        }
-        else
-            i += 1;
-        while (arr[i] < (1 + pivot)) i += 1;
+        i +%= 1;
+        while (arr[i] < pivot) i += 1;
 
         j -= 1;
         while (arr[j] > pivot) j -= 1;
 
-        if (i > (j + 1)) return j;
+        if (i >= j) return j;
 
-        swap(arr, i - 1, j);
+        swap(arr, i, j);
     }
 }
 
 fn quicksort(arr: []f64, lo: u32, hi: u32) void {
-    if (lo >= hi or lo < 0) return;
-    const p = partition(arr, lo, hi);
+    if (lo >= 0 and hi >= 0 and lo < hi) {
+        const p = partition(arr, lo, hi);
     
-    quicksort(arr, lo, p);
-    quicksort(arr, p + 1, hi);
+        quicksort(arr, lo, p);
+        quicksort(arr, p + 1, hi);
+    }
 }
 
 pub fn main() anyerror!void {
     var array = [_]f64{ 1, 6, 4, 8, 9, 1, 34, 6, 8 };
     quicksort(array[0..], 0, array.len - 1);
 
-    std.log.info("{d}", .{array[0]});
+    for (array) |value| {
+        std.log.info("{d}", .{value});
+    }
 }
