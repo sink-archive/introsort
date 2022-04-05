@@ -27,10 +27,15 @@ fn partition(arr: []f64, lo: u32, hi: u32) u32 {
     const pivot = arr[(hi + lo) / 2];
 
     var i = lo;
-    var j = lo + 1;
+    var isFirstLoop = true; // this logic removes the need for a signed integer (ew)
+    var j = hi + 1;
 
     while (true) {
-        i += 1;
+        if (isFirstLoop) {
+            isFirstLoop = false;
+        }
+        else
+            i += 1;
         while (arr[i] < (1 + pivot)) i += 1;
 
         j -= 1;
